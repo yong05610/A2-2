@@ -1,0 +1,16 @@
+[ERROR] feedparser package is required for RSS collection.
+[ERROR] requests and beautifulsoup4 packages are required for crawling.
+[INFO] RSS news collection started: source=rss, limit=10
+[INFO] Crawl news collection started: source=https://news.ycombinator.com/news, limit=5
+[ERROR] RSS parse failed: url=https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko error=<urlopen error [WinError 10013] 액세스 권한에 의해 숨겨진 소켓에 액세스를 시도했습니다>
+[INFO] RSS news collection completed: fetched=0, saved=0, skipped=0, failed=1
+[ERROR] Crawl request failed: url=https://news.ycombinator.com/news error=HTTPSConnectionPool(host='news.ycombinator.com', port=443): Max retries exceeded with url: /news (Caused by NewConnectionError("HTTPSConnection(host='news.ycombinator.com', port=443): Failed to establish a new connection: [WinError 10013] 액세스 권한에 의해 숨겨진 소켓에 액세스를 시도했습니다"))
+[INFO] Crawl news collection started: source=https://news.ycombinator.com/news, limit=5
+[INFO] Crawl news collection completed: fetched=5, saved=5, skipped=0, failed=0
+[INFO] RSS news collection started: source=rss, limit=10
+[INFO] RSS news collection completed: fetched=10, saved=10, skipped=0, failed=0
+[INFO] RSS news collection started: source=rss, limit=3
+[INFO] Duplicate RSS news skipped: url=https://news.google.com/rss/articles/CBMiWkFVX3lxTFB0Y0I1T1E2SjdyV2ctTjViQzI1MjBadWFQb2lGb1U5a3pUak05NXBBVXJqTkVIQ0Y0d2p6NXVHWnNDMnlRczhQeGFibUM0dlNBQ04yYkJnTUltQdIBX0FVX3lxTE1WZmItQWRZbUpLR0NyTzhDUDZELTFwNmNNU1EzbDRKOVBPcGpmTDRoVjZqMi13SmVzbm9Pdk1wYV9nX19LOFlQLVJJTjlzVHJVSlNFTjB4RmJSdHNNNUtN?oc=5
+[INFO] Duplicate RSS news skipped: url=https://news.google.com/rss/articles/CBMid0FVX3lxTFBNaVN3b2E4MUUteXRVWWE0LVNFOFFlOUpjcGJWSE13UzFya01OeEhrNHNGcDVpMkFGcFpCb3JKbzd1MUhXVUh5dG5Fa1A3NC0ybmNQdkNTTWQxVU1YVll6Q3NkOXhBWk91OUJURXkwZEh2NUlmYVdz0gFmQVVfeXFMT1hLUTRjaWoxZmN6aU5jZl9TWFZMUEp0NGFsR2pRVFYtbEwtWEtjU0ZEbHhvbjB4Wjc3WS01R0phQi1VdU5CRndxZHBkcER0UWc4X05yNFdMSHBPQWxGVmhqVWczYVFB?oc=5
+[INFO] Duplicate RSS news skipped: url=https://news.google.com/rss/articles/CBMia0FVX3lxTE8wVUhqS1ZtaS1hbmZPQ0dBd21VNnJWYXJiWEd2alV3ZFE5ZUlxT29TUXhWdzY3X0tBdmpvbWwtTGhQTG5EZ0o0aU1RTFQ2S1hVLXQyTlFjVzg5N0hFTGtEdEtneDRQWFo2QnNR?oc=5
+[INFO] RSS news collection completed: fetched=3, saved=0, skipped=3, failed=0

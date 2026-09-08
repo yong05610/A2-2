@@ -179,7 +179,10 @@ matplotlib을 사용한다.
 
 필터링 옵션:
 
-- `--status summarized`
+- `--status {all,cleaned,summarized}`
+- 기본값은 `all`
+- 요약 완료 뉴스만 내보낼 때는 `--status summarized`를 사용한다.
+- 선택적으로 `--summarized`는 `--status summarized`의 별칭으로 지원할 수 있다.
 
 ---
 
