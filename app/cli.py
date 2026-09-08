@@ -1,10 +1,16 @@
 """Command-line interface skeleton."""
 
 import argparse
+import sys
 
+from app.analyzer import analyze_news
+from app.cleaner import clean_raw_news
 from app.crawler import crawl_news
 from app.database import init_db
+from app.exporter import export_table
 from app.fetcher import fetch_rss_news
+from app.reporter import generate_report
+from app.summarizer import summarize_news
 
 
 def _handle_placeholder(args: argparse.Namespace) -> None:
@@ -32,6 +38,67 @@ def _handle_fetch(args: argparse.Namespace) -> None:
         f"skipped={result['skipped']}, "
         f"failed={result['failed']}"
     )
+
+
+def _handle_clean(args: argparse.Namespace) -> None:
+    """Run raw news cleaning."""
+    result = clean_raw_news(policy=args.policy, limit=args.limit)
+    print(
+        "Clean completed: "
+        f"inserted={result['inserted']}, "
+        f"updated={result['updated']}, "
+        f"skipped={result['skipped']}, "
+        f"failed={result['failed']}"
+    )
+
+
+def _handle_summarize(args: argparse.Namespace) -> None:
+    """Run AI summarization."""
+    result = summarize_news(
+        news_id=args.id,
+        summarize_all=args.all,
+        unsummarized=args.unsummarized or not args.all,
+        limit=args.limit,
+    )
+    print("Summarize completed")
+    print(f"created_or_updated: {result['created_or_updated']}")
+    print(f"skipped_short_content: {result['skipped_short_content']}")
+    print(f"failed: {result['failed']}")
+
+
+def _handle_analyze(args: argparse.Namespace) -> None:
+    """Run AI insight analysis."""
+    result = analyze_news(
+        date_from=args.date_from,
+        date_to=args.date_to,
+        category=args.category,
+        limit=args.limit,
+    )
+    print("Analyze completed")
+    print(f"analysis_id: {result['analysis_id']}")
+    print(f"news_count: {result['news_count']}")
+    print(f"failed: {result['failed']}")
+
+
+def _handle_report(args: argparse.Namespace) -> None:
+    """Generate report assets."""
+    generate_report(report_format=args.format, top_n=args.top_n)
+
+
+def _handle_export(args: argparse.Namespace) -> None:
+    """Export database rows to a file."""
+    try:
+        export_table(
+            table_name=args.table,
+            export_format=args.format,
+            status=args.status,
+            summarized_only=args.summarized,
+            category=args.category,
+            date_from=args.date_from,
+            date_to=args.date_to,
+        )
+    except ValueError as error:
+        print(f"Export failed: {error}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -65,7 +132,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Duplicate handling policy. Default: skip.",
     )
     clean_parser.add_argument("--limit", type=int, help="Maximum number of raw news items to clean.")
-    clean_parser.set_defaults(func=_handle_placeholder)
+    clean_parser.set_defaults(func=_handle_clean)
 
     summarize_parser = subparsers.add_parser("summarize", help="Summarize cleaned news with AI.")
     summarize_target = summarize_parser.add_mutually_exclusive_group()
@@ -77,14 +144,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Summarize only news items without summaries.",
     )
     summarize_parser.add_argument("--limit", type=int, help="Maximum number of news items to summarize.")
-    summarize_parser.set_defaults(func=_handle_placeholder)
+    summarize_parser.set_defaults(func=_handle_summarize)
 
     analyze_parser = subparsers.add_parser("analyze", help="Analyze trends and insights with AI.")
     analyze_parser.add_argument("--date-from", help="Start date filter in YYYY-MM-DD format.")
     analyze_parser.add_argument("--date-to", help="End date filter in YYYY-MM-DD format.")
     analyze_parser.add_argument("--category", help="Category filter.")
     analyze_parser.add_argument("--limit", type=int, help="Maximum number of news items to analyze.")
-    analyze_parser.set_defaults(func=_handle_placeholder)
+    analyze_parser.set_defaults(func=_handle_analyze)
 
     report_parser = subparsers.add_parser("report", help="Generate a console and file report.")
     report_parser.add_argument(
@@ -94,12 +161,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Report file format. Default: md.",
     )
     report_parser.add_argument("--top-n", type=int, default=5, help="Number of top items to include.")
-    report_parser.set_defaults(func=_handle_placeholder)
+    report_parser.set_defaults(func=_handle_report)
 
     export_parser = subparsers.add_parser("export", help="Export cleaned news data.")
     export_parser.add_argument(
+        "--table",
+        choices=["clean_news", "summaries", "analyses"],
+        default="clean_news",
+        help="Database table to export. Default: clean_news.",
+    )
+    export_parser.add_argument(
         "--format",
-        choices=["csv", "jsonl", "excel"],
+        choices=["csv", "json"],
         default="csv",
         help="Export file format. Default: csv.",
     )
@@ -117,7 +190,7 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser.add_argument("--category", help="Category filter.")
     export_parser.add_argument("--date-from", help="Start date filter in YYYY-MM-DD format.")
     export_parser.add_argument("--date-to", help="End date filter in YYYY-MM-DD format.")
-    export_parser.set_defaults(func=_handle_placeholder)
+    export_parser.set_defaults(func=_handle_export)
 
     list_parser = subparsers.add_parser("list", help="List stored news items.")
     list_parser.add_argument("--category", help="Category filter.")
@@ -137,6 +210,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Run the CLI application."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
     init_db()
     parser = build_parser()
     args = parser.parse_args()

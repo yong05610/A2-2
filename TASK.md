@@ -7,43 +7,43 @@
 
 ## Phase 0. 프로젝트 준비
 
-- [ ] GitHub 저장소 생성
-- [ ] VSCode에서 저장소 열기
-- [ ] Python 3.10 이상 확인
-- [ ] 가상환경 생성
-- [ ] requirements.txt 생성
-- [ ] config.json 생성
-- [ ] .gitignore 생성
-- [ ] MISSION.md 작성
-- [ ] PRD.md 작성
-- [ ] TASK.md 작성
-- [ ] CHECKLIST.md 작성
-- [ ] CODEX_PROMPTS.md 생성
+- [X] GitHub 저장소 생성
+- [X] VSCode에서 저장소 열기
+- [X] Python 3.10 이상 확인
+- [X] 가상환경 생성
+- [X] requirements.txt 생성
+- [X] config.json 생성
+- [X] .gitignore 생성
+- [X] MISSION.md 작성
+- [X] PRD.md 작성
+- [X] TASK.md 작성
+- [X] CHECKLIST.md 작성
+- [X] CODEX_PROMPTS.md 생성
 
 확인할 점:
 
-- [ ] 저장소가 정상 생성되었는가?
-- [ ] VSCode에서 프로젝트가 열리는가?
-- [ ] Python 버전이 3.10 이상인가?
-- [ ] 가상환경이 생성되었는가?
-- [ ] 기본 문서 파일이 준비되었는가?
+- [X] 저장소가 정상 생성되었는가?
+- [X] VSCode에서 프로젝트가 열리는가?
+- [X] Python 버전이 3.10 이상인가?
+- [X] 가상환경이 생성되었는가?
+- [X] 기본 문서 파일이 준비되었는가?
 
 ---
 
 ## Phase 1. 기본 구조 생성
 
-- [ ] main.py 생성
-- [ ] app 패키지 생성
-- [ ] app/__init__.py 생성
-- [ ] app/cli.py 생성
-- [ ] app/config.py 생성
-- [ ] app/logger.py 생성
-- [ ] app/database.py 생성
-- [ ] data 디렉터리 생성
-- [ ] logs 디렉터리 생성
-- [ ] data/reports 디렉터리 생성
-- [ ] data/exports 디렉터리 생성
-- [ ] data/charts 디렉터리 생성
+- [X] main.py 생성
+- [X] app 패키지 생성
+- [X] app/__init__.py 생성
+- [X] app/cli.py 생성
+- [X] app/config.py 생성
+- [X] app/logger.py 생성
+- [X] app/database.py 생성
+- [X] data 디렉터리 생성
+- [X] logs 디렉터리 생성
+- [X] data/reports 디렉터리 생성
+- [X] data/exports 디렉터리 생성
+- [X] data/charts 디렉터리 생성
 
 추천 프로젝트 구조:
 
@@ -83,24 +83,24 @@ news-ai-cli/
 
 확인할 점:
 
-- [ ] 모든 코드가 main.py 하나에 몰려 있지 않은가?
-- [ ] app 패키지 내부에 기능별 모듈을 둘 준비가 되었는가?
-- [ ] data, logs 관련 디렉터리가 준비되었는가?
+- [X] 모든 코드가 main.py 하나에 몰려 있지 않은가?
+- [X] app 패키지 내부에 기능별 모듈을 둘 준비가 되었는가?
+- [X] data, logs 관련 디렉터리가 준비되었는가?
 
 ---
 
 ## Phase 2. CLI 뼈대 구현
 
-- [ ] argparse 기반 CLI 구현
-- [ ] fetch 서브커맨드 추가
-- [ ] clean 서브커맨드 추가
-- [ ] summarize 서브커맨드 추가
-- [ ] analyze 서브커맨드 추가
-- [ ] report 서브커맨드 추가
-- [ ] export 서브커맨드 추가
-- [ ] 보너스용 list 서브커맨드 추가
-- [ ] 보너스용 show 서브커맨드 추가
-- [ ] 각 서브커맨드 help 메시지 확인
+- [X] argparse 기반 CLI 구현
+- [X] fetch 서브커맨드 추가
+- [X] clean 서브커맨드 추가
+- [X] summarize 서브커맨드 추가
+- [X] analyze 서브커맨드 추가
+- [X] report 서브커맨드 추가
+- [X] export 서브커맨드 추가
+- [X] 보너스용 list 서브커맨드 추가
+- [X] 보너스용 show 서브커맨드 추가
+- [X] 각 서브커맨드 help 메시지 확인
 
 필수 서브커맨드:
 
@@ -136,32 +136,32 @@ python main.py show --help
 
 확인할 점:
 
-- [ ] `python main.py --help`가 정상 출력되는가?
-- [ ] 필수 서브커맨드 6개가 모두 보이는가?
-- [ ] 각 서브커맨드별 옵션 설명이 출력되는가?
+- [X] `python main.py --help`가 정상 출력되는가?
+- [X] 필수 서브커맨드 6개가 모두 보이는가?
+- [X] 각 서브커맨드별 옵션 설명이 출력되는가?
 
 ---
 
 ## Phase 3. SQLite 데이터베이스 구현
 
-- [ ] app/database.py에 DB 연결 함수 구현
-- [ ] config.json에서 DB 경로 읽기
-- [ ] DB 파일이 없으면 자동 생성
-- [ ] 기존 데이터는 삭제하지 않고 유지
-- [ ] 테이블이 없을 때만 생성하는 init_db 함수 구현
-- [ ] CREATE TABLE IF NOT EXISTS 방식 사용
-- [ ] 프로그램 실행 시 init_db를 호출하되 기존 데이터는 보존
-- [ ] raw_news 테이블 생성
-- [ ] clean_news 테이블 생성
-- [ ] summaries 테이블 생성
-- [ ] analyses 테이블 생성
-- [ ] 테이블 초기화 함수 구현
-- [ ] raw 뉴스 저장 함수 구현
-- [ ] clean 뉴스 저장 함수 구현
-- [ ] 요약 결과 저장 함수 구현
-- [ ] 분석 결과 저장 함수 구현
-- [ ] 뉴스 조회 함수 구현
-- [ ] URL 중복 방지를 위한 UNIQUE 제약 또는 중복 검사 구현
+- [X] app/database.py에 DB 연결 함수 구현
+- [X] config.json에서 DB 경로 읽기
+- [X] DB 파일이 없으면 자동 생성
+- [X] 기존 데이터는 삭제하지 않고 유지
+- [X] 테이블이 없을 때만 생성하는 init_db 함수 구현
+- [X] CREATE TABLE IF NOT EXISTS 방식 사용
+- [X] 프로그램 실행 시 init_db를 호출하되 기존 데이터는 보존
+- [X] raw_news 테이블 생성
+- [X] clean_news 테이블 생성
+- [X] summaries 테이블 생성
+- [X] analyses 테이블 생성
+- [X] 테이블 초기화 함수 구현
+- [X] raw 뉴스 저장 함수 구현
+- [X] clean 뉴스 저장 함수 구현
+- [X] 요약 결과 저장 함수 구현
+- [X] 분석 결과 저장 함수 구현
+- [X] 뉴스 조회 함수 구현
+- [X] URL 중복 방지를 위한 UNIQUE 제약 또는 중복 검사 구현
 
 중요 정책:
 
@@ -189,42 +189,42 @@ python -c "from app.database import init_db; init_db(); print('DB ready')"
 
 확인할 점:
 
-- [ ] DB 파일이 없을 때 자동 생성되는가?
-- [ ] data/news.db 파일이 생성되는가?
-- [ ] raw_news 테이블이 생성되는가?
-- [ ] clean_news 테이블이 생성되는가?
-- [ ] summaries 테이블이 생성되는가?
-- [ ] analyses 테이블이 생성되는가?
-- [ ] init-db 명령어 없이도 DB가 준비되는가?
-- [ ] 프로그램 실행 시 DB와 테이블이 자동 준비되는가?
-- [ ] 기존 DB 데이터는 삭제되지 않는가?
+- [X] DB 파일이 없을 때 자동 생성되는가?
+- [X] data/news.db 파일이 생성되는가?
+- [X] raw_news 테이블이 생성되는가?
+- [X] clean_news 테이블이 생성되는가?
+- [X] summaries 테이블이 생성되는가?
+- [X] analyses 테이블이 생성되는가?
+- [X] init-db 명령어 없이도 DB가 준비되는가?
+- [X] 프로그램 실행 시 DB와 테이블이 자동 준비되는가?
+- [X] 기존 DB 데이터는 삭제되지 않는가?
 
 
 ---
 
 ## Phase 4. 뉴스 수집 기능 구현
 
-- [ ] app/fetcher.py 생성 또는 구현
-- [ ] RSS 수집 기능 구현
-- [ ] feedparser 사용
-- [ ] app/crawler.py 생성 또는 구현
-- [ ] requests 사용
-- [ ] BeautifulSoup 사용
-- [ ] User-Agent 설정
-- [ ] timeout 설정
-- [ ] 요청 delay 적용
-- [ ] 요청 실패 예외 처리
-- [ ] HTTP 상태 코드 오류 처리
-- [ ] 수집 시각 저장
-- [ ] 소스 정보 저장
-- [ ] 수집 방법 저장
-- [ ] 수집 결과를 raw_news 테이블에 저장
-- [ ] fetch --method rss 옵션 연결
-- [ ] fetch --method crawl 옵션 연결
-- [ ] fetch --limit 옵션 연결
-- [ ] fetch --source 옵션 연결
-- [ ] fetch --category 옵션 연결
-- [ ] logging으로 수집 결과 기록
+- [X] app/fetcher.py 생성 또는 구현
+- [X] RSS 수집 기능 구현
+- [X] feedparser 사용
+- [X] app/crawler.py 생성 또는 구현
+- [X] requests 사용
+- [X] BeautifulSoup 사용
+- [X] User-Agent 설정
+- [X] timeout 설정
+- [X] 요청 delay 적용
+- [X] 요청 실패 예외 처리
+- [X] HTTP 상태 코드 오류 처리
+- [X] 수집 시각 저장
+- [X] 소스 정보 저장
+- [X] 수집 방법 저장
+- [X] 수집 결과를 raw_news 테이블에 저장
+- [X] fetch --method rss 옵션 연결
+- [X] fetch --method crawl 옵션 연결
+- [X] fetch --limit 옵션 연결
+- [X] fetch --source 옵션 연결
+- [X] fetch --category 옵션 연결
+- [X] logging으로 수집 결과 기록
 
 수집 방식:
 
@@ -242,39 +242,39 @@ python main.py fetch --method crawl --limit 5
 
 확인할 점:
 
-- [ ] raw_news 테이블에 데이터가 저장되는가?
-- [ ] RSS 방식 수집이 동작하는가?
-- [ ] 크롤링 방식 수집이 동작하는가?
-- [ ] 수집 시각이 저장되는가?
-- [ ] 소스 정보가 저장되는가?
-- [ ] 수집 방법이 저장되는가?
-- [ ] 네트워크 오류 발생 시 프로그램이 비정상 종료되지 않는가?
-- [ ] timeout과 delay 설정이 적용되는가?
-- [ ] 크롤링 대상에 과도한 요청을 보내지 않는가?
+- [X] raw_news 테이블에 데이터가 저장되는가?
+- [X] RSS 방식 수집이 동작하는가?
+- [X] 크롤링 방식 수집이 동작하는가?
+- [X] 수집 시각이 저장되는가?
+- [X] 소스 정보가 저장되는가?
+- [X] 수집 방법이 저장되는가?
+- [X] 네트워크 오류 발생 시 프로그램이 비정상 종료되지 않는가?
+- [X] timeout과 delay 설정이 적용되는가?
+- [X] 크롤링 대상에 과도한 요청을 보내지 않는가?
 
 ---
 
 ## Phase 5. 데이터 정제 기능 구현
 
-- [ ] app/cleaner.py 생성 또는 구현
-- [ ] raw_news에서 정제 대상 데이터 조회
-- [ ] 필수 필드 검증
-- [ ] 제목 정제
-- [ ] URL 정제
-- [ ] 본문 또는 설명 텍스트 정제
-- [ ] HTML 태그 제거
-- [ ] 불필요한 공백 제거
-- [ ] 날짜 형식 통일
-- [ ] 결측값 처리
-- [ ] 카테고리가 없으면 기본값 기타로 처리
-- [ ] content_length 계산
-- [ ] 중복 URL 검사
-- [ ] 중복 처리 정책 skip 구현
-- [ ] 중복 처리 정책 upsert 구현
-- [ ] 정제 결과를 clean_news 테이블에 저장
-- [ ] clean_news.status 기본값을 cleaned로 설정
-- [ ] clean --policy 옵션 연결
-- [ ] clean --limit 옵션 연결
+- [X] app/cleaner.py 생성 또는 구현
+- [X] raw_news에서 정제 대상 데이터 조회
+- [X] 필수 필드 검증
+- [X] 제목 정제
+- [X] URL 정제
+- [X] 본문 또는 설명 텍스트 정제
+- [X] HTML 태그 제거
+- [X] 불필요한 공백 제거
+- [X] 날짜 형식 통일
+- [X] 결측값 처리
+- [X] 카테고리가 없으면 기본값 기타로 처리
+- [X] content_length 계산
+- [X] 중복 URL 검사
+- [X] 중복 처리 정책 skip 구현
+- [X] 중복 처리 정책 upsert 구현
+- [X] 정제 결과를 clean_news 테이블에 저장
+- [X] clean_news.status 기본값을 cleaned로 설정
+- [X] clean --policy 옵션 연결
+- [X] clean --limit 옵션 연결
 
 중복 처리 정책:
 
@@ -292,13 +292,13 @@ python main.py clean --policy upsert
 
 확인할 점:
 
-- [ ] clean_news 테이블에 데이터가 저장되는가?
-- [ ] raw_news와 clean_news가 분리되어 있는가?
-- [ ] 필수 필드가 없는 데이터가 적절히 처리되는가?
-- [ ] HTML 태그가 제거되는가?
-- [ ] 불필요한 공백이 제거되는가?
-- [ ] 날짜 형식이 통일되는가?
-- [ ] 중복 데이터가 정책에 따라 처리되는가?
+- [X] clean_news 테이블에 데이터가 저장되는가?
+- [X] raw_news와 clean_news가 분리되어 있는가?
+- [X] 필수 필드가 없는 데이터가 적절히 처리되는가?
+- [X] HTML 태그가 제거되는가?
+- [X] 불필요한 공백이 제거되는가?
+- [X] 날짜 형식이 통일되는가?
+- [X] 중복 데이터가 정책에 따라 처리되는가?
 
 ---
 

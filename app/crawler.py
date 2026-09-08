@@ -8,7 +8,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 from app.config import load_config
-from app.database import save_raw_news
+from app.database import fill_empty_raw_content_with_title, save_raw_news
 from app.logger import get_logger
 
 
@@ -90,6 +90,9 @@ def crawl_news(limit: int, source: str | None = None, category: str | None = Non
             continue
 
         raw_summary = item.get("summary") or ""
+        if not raw_summary.strip():
+            raw_summary = title
+            logger.warning("Crawled content fallback applied: url=%s", url)
         news = {
             "title": title,
             "url": url,
@@ -107,7 +110,7 @@ def crawl_news(limit: int, source: str | None = None, category: str | None = Non
             },
         }
 
-        row_id = save_raw_news(news, duplicate_policy=duplicate_policy)
+        row_id = save_raw_news(news, duplicate_policy="upsert")
         if row_id is None:
             skipped += 1
             logger.info("Duplicate crawled news skipped: url=%s", url)
@@ -118,5 +121,8 @@ def crawl_news(limit: int, source: str | None = None, category: str | None = Non
         if delay > 0:
             time.sleep(delay)
 
+    backfilled = fill_empty_raw_content_with_title()
+    if backfilled:
+        logger.warning("Existing raw news rows backfilled with title content: count=%s", backfilled)
     logger.info("Crawl news collection completed: fetched=%s, saved=%s, skipped=%s, failed=%s", len(items), saved, skipped, failed)
     return {"fetched": len(items), "saved": saved, "skipped": skipped, "failed": failed}

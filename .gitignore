@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.matplotlib/
+.venv/
+venv/
+env/
+
+# Runtime data
+logs/
+*.log
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/reports/
+data/exports/
+data/charts/
+
+# Local editor/system files
+.DS_Store
+Thumbs.db

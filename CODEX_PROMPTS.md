@@ -236,6 +236,151 @@ CLI 옵션:
 python main.py summarize --unsummarized --limit 3
 python main.py summarize --id 1
 ```
+변경된 프롬프트 
+
+Gemini API를 사용한 뉴스 요약 기능을 구현해줘.
+
+현재 프로젝트는 CLI 기반 Python 뉴스 수집/정제 애플리케이션이다.
+이미 raw_news, clean_news, summaries 관련 DB 구조가 일부 존재할 수 있으니,
+먼저 기존 프로젝트 구조와 DB 스키마를 확인한 뒤 기존 코드 스타일에 맞춰 구현해줘.
+
+요구사항:
+
+1. Gemini API 설정
+- GEMINI_API_KEY는 환경변수에서 읽는다.
+- API Key를 코드에 직접 작성하지 않는다.
+- 환경변수가 없으면 친절한 ERROR 메시지를 출력하고 종료한다.
+- Gemini 모델명은 config.json에서 읽는다.
+- config.json에 Gemini 설정이 없다면 기본값을 추가하거나 기본 모델을 사용한다.
+- 추천 기본 모델명은 "gemini-1.5-flash" 또는 현재 SDK에서 사용 가능한 flash 모델로 한다.
+
+2. 요약 대상 조회
+- clean_news 테이블에서 요약 대상 뉴스를 조회한다.
+- clean_news.content를 요약 입력으로 사용한다.
+- content가 비어 있거나 너무 짧은 뉴스는 요약하지 않는다.
+- 최소 요약 가능 길이는 기본 50자로 한다.
+- content_length < 50인 데이터는 skipped_short_content로 처리하고 로그를 남긴다.
+- 이미 요약된 뉴스는 기본적으로 다시 요약하지 않는다.
+- 단, --all 옵션 사용 시 기존 요약이 있어도 다시 처리하거나 upsert 방식으로 갱신할 수 있게 한다.
+
+3. CLI 명령 구현
+main.py에서 다음 명령이 동작하도록 구현한다.
+
+python main.py summarize --unsummarized --limit 3
+python main.py summarize --id 1
+python main.py summarize --all
+python main.py summarize --all --limit 10
+
+CLI 옵션:
+- --id: 특정 clean_news.id 하나만 요약한다.
+- --all: 전체 clean_news를 대상으로 요약한다.
+- --unsummarized: 아직 요약되지 않은 뉴스만 요약한다.
+- --limit: 처리 개수를 제한한다.
+
+옵션 동작 기준:
+- --id가 있으면 해당 id 하나만 처리한다.
+- --id가 없고 --all이 있으면 전체 대상 처리한다.
+- --id가 없고 --unsummarized가 있으면 미요약 대상만 처리한다.
+- 아무 옵션도 없으면 --unsummarized와 동일하게 동작하게 한다.
+
+4. Gemini 요약 프롬프트
+각 뉴스에 대해 Gemini에게 한국어 요약을 요청한다.
+
+요약 규칙:
+- 한국어로 작성한다.
+- 3~5문장으로 요약한다.
+- 핵심 내용, 배경, 의미를 간결하게 포함한다.
+- 과장하지 않는다.
+- 원문에 없는 내용을 추측하지 않는다.
+
+Gemini에 보낼 프롬프트 예시:
+
+"""
+다음 뉴스 내용을 한국어로 3~5문장으로 요약해줘.
+핵심 내용과 의미를 간결하게 설명하고, 원문에 없는 내용은 추측하지 마.
+
+제목:
+{title}
+
+본문:
+{content}
+"""
+
+5. summaries 테이블 저장
+- 요약 결과를 summaries 테이블에 저장한다.
+- summaries 테이블 구조가 이미 있으면 기존 구조를 최대한 활용한다.
+- 필요한 컬럼이 없다면 안전하게 migration 또는 ALTER TABLE 방식으로 추가한다.
+- clean_news_id 기준으로 중복 저장을 방지한다.
+- 같은 clean_news_id에 대해 이미 요약이 있으면 upsert 또는 update 처리한다.
+
+저장해야 할 주요 정보:
+- clean_news_id
+- summary
+- model
+- created_at
+- updated_at
+
+가능하다면 다음 정보도 저장한다:
+- prompt 또는 prompt_version
+- status
+- error_message
+
+6. clean_news 상태 업데이트
+- 요약 성공 시 clean_news.status를 "summarized"로 변경한다.
+- 짧은 본문으로 skip한 경우에는 clean_news.status를 "skipped_short_content"로 변경한다.
+- API 호출 실패 시 clean_news.status를 "summary_failed"로 변경한다.
+- clean_news.status 컬럼이 없다면 안전하게 추가한다.
+
+7. 에러 처리
+- Gemini API 호출 실패 시 프로그램 전체가 중단되지 않게 한다.
+- 실패한 뉴스는 ERROR 로그를 남기고 다음 뉴스로 넘어간다.
+- 실패 사유를 summaries 테이블 또는 로그에 남긴다.
+- 네트워크 오류, API 오류, 응답 비어 있음 등을 처리한다.
+
+8. 로그 출력
+요약 실행 시 다음과 비슷하게 진행 상황을 출력한다.
+
+예:
+[INFO] Summarize started
+[INFO] Target news count: 3
+[INFO] Summarizing clean_news_id=1 title="..."
+[OK] Summary saved clean_news_id=1
+[SKIP] Short content clean_news_id=32 content_length=5
+[ERROR] Gemini failed clean_news_id=7 error="..."
+[INFO] Summarize completed
+created_or_updated: 2
+skipped_short_content: 1
+failed: 0
+
+9. 코드 구조
+- 기존 프로젝트 구조를 먼저 확인하고 그 구조에 맞춰 파일을 추가/수정한다.
+- 가능하면 요약 관련 로직은 별도 모듈로 분리한다.
+  예:
+  services/summarizer.py
+  또는 src/summarizer.py
+- DB 접근 로직이 이미 분리되어 있다면 기존 DB 유틸을 재사용한다.
+- main.py에는 CLI 연결만 깔끔하게 둔다.
+- 중복 코드가 생기지 않게 한다.
+
+10. 의존성
+- Gemini SDK가 requirements.txt에 없다면 추가한다.
+- 사용할 SDK는 프로젝트 환경에 맞춰 선택하되, 최신 Google Gemini Python SDK 사용을 우선 고려한다.
+- 설치가 필요한 패키지가 있으면 requirements.txt에 반영한다.
+
+11. 검증
+구현 후 아래 명령이 정상 동작해야 한다.
+
+python main.py summarize --unsummarized --limit 3
+python main.py summarize --id 1
+
+추가로 DB 확인용 간단한 쿼리 또는 확인 방법도 README나 주석으로 안내해줘.
+
+주의사항:
+- API Key를 절대 코드에 하드코딩하지 마.
+- 기존 fetch, clean 기능이 깨지지 않게 해줘.
+- 기존 DB 데이터가 삭제되지 않게 해줘.
+- content_length가 너무 짧은 뉴스, 예를 들어 title만 content에 들어간 뉴스는 Gemini 요약 대상에서 제외해줘.
+
 
 ---
 

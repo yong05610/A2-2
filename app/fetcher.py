@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from app.config import load_config
-from app.database import save_raw_news
+from app.database import fill_empty_raw_content_with_title, save_raw_news
 from app.logger import get_logger
 
 
@@ -76,7 +76,11 @@ def fetch_rss_news(limit: int, source: str | None = None, category: str | None =
                 continue
 
             raw_summary = getattr(entry, "summary", "") or getattr(entry, "description", "")
-            raw_content = raw_summary
+            raw_content = raw_summary.strip() if isinstance(raw_summary, str) else str(raw_summary or "").strip()
+            if not raw_content:
+                raw_content = title
+                raw_summary = title
+                logger.warning("RSS content fallback applied: url=%s", url)
             news = {
                 "title": title,
                 "url": url,
@@ -94,7 +98,7 @@ def fetch_rss_news(limit: int, source: str | None = None, category: str | None =
                 },
             }
 
-            row_id = save_raw_news(news, duplicate_policy=duplicate_policy)
+            row_id = save_raw_news(news, duplicate_policy="upsert")
             fetched += 1
             if row_id is None:
                 skipped += 1
@@ -102,5 +106,8 @@ def fetch_rss_news(limit: int, source: str | None = None, category: str | None =
             else:
                 saved += 1
 
+    backfilled = fill_empty_raw_content_with_title()
+    if backfilled:
+        logger.warning("Existing raw news rows backfilled with title content: count=%s", backfilled)
     logger.info("RSS news collection completed: fetched=%s, saved=%s, skipped=%s, failed=%s", fetched, saved, skipped, failed)
     return {"fetched": fetched, "saved": saved, "skipped": skipped, "failed": failed}

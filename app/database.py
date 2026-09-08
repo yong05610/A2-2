@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from app.config import load_config, resolve_project_path
+
+
+logger = logging.getLogger(__name__)
 
 
 def _utc_now() -> str:
@@ -30,6 +34,30 @@ def get_connection() -> sqlite3.Connection:
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
+
+
+def _get_columns(connection: sqlite3.Connection, table_name: str) -> set[str]:
+    rows = connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return {row["name"] for row in rows}
+
+
+def _add_column_if_missing(
+    connection: sqlite3.Connection,
+    table_name: str,
+    column_name: str,
+    column_definition: str,
+) -> None:
+    columns = _get_columns(connection, table_name)
+    if column_name not in columns:
+        connection.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}")
+
+
+def migrate_db() -> None:
+    """Apply additive migrations without deleting existing data."""
+    with get_connection() as connection:
+        _add_column_if_missing(connection, "summaries", "prompt_version", "TEXT")
+        _add_column_if_missing(connection, "summaries", "status", "TEXT DEFAULT 'completed'")
+        _add_column_if_missing(connection, "summaries", "error_message", "TEXT")
 
 
 def init_db() -> None:
@@ -73,6 +101,9 @@ def init_db() -> None:
                 clean_news_id INTEGER NOT NULL UNIQUE,
                 summary TEXT NOT NULL,
                 model TEXT,
+                prompt_version TEXT,
+                status TEXT DEFAULT 'completed',
+                error_message TEXT,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 FOREIGN KEY (clean_news_id) REFERENCES clean_news (id)
@@ -90,6 +121,7 @@ def init_db() -> None:
             );
             """
         )
+    migrate_db()
 
 
 def _serialize_payload(payload: Any) -> str | None:
@@ -101,8 +133,33 @@ def _serialize_payload(payload: Any) -> str | None:
     return json.dumps(payload, ensure_ascii=False)
 
 
+def _prepare_raw_news(news: dict[str, Any]) -> dict[str, Any]:
+    """Ensure raw news has non-empty content before database writes."""
+    prepared = dict(news)
+    title = str(prepared.get("title") or "").strip()
+    content = str(prepared.get("content") or "").strip()
+
+    if not content:
+        content = title
+        logger.warning("Raw news content fallback applied: url=%s", prepared.get("url"))
+
+    prepared["content"] = content
+
+    raw_payload = prepared.get("raw_payload")
+    if isinstance(raw_payload, dict):
+        raw_payload = dict(raw_payload)
+        if not str(raw_payload.get("raw_content") or "").strip():
+            raw_payload["raw_content"] = content
+        if not str(raw_payload.get("raw_summary") or "").strip():
+            raw_payload["raw_summary"] = content
+        prepared["raw_payload"] = raw_payload
+
+    return prepared
+
+
 def save_raw_news(news: dict[str, Any], duplicate_policy: str = "skip") -> int | None:
     """Save a raw news item and return its row ID."""
+    news = _prepare_raw_news(news)
     now = _utc_now()
     sql = (
         """
@@ -156,6 +213,33 @@ def save_raw_news(news: dict[str, Any], duplicate_policy: str = "skip") -> int |
             )
             row = connection.execute("SELECT id FROM raw_news WHERE url = ?", (news["url"],)).fetchone()
             return int(row["id"]) if row else None
+
+
+def fill_empty_raw_content_with_title() -> int:
+    """Backfill old raw rows that have empty content using their title."""
+    now = _utc_now()
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, url
+            FROM raw_news
+            WHERE content IS NULL OR trim(content) = ''
+            """
+        ).fetchall()
+
+        for row in rows:
+            logger.warning("Existing raw news content fallback applied: url=%s", row["url"])
+
+        connection.execute(
+            """
+            UPDATE raw_news
+            SET content = title,
+                updated_at = ?
+            WHERE content IS NULL OR trim(content) = ''
+            """,
+            (now,),
+        )
+        return len(rows)
 
 
 def save_clean_news(news: dict[str, Any], duplicate_policy: str = "skip") -> int | None:
@@ -216,23 +300,50 @@ def save_clean_news(news: dict[str, Any], duplicate_policy: str = "skip") -> int
             return int(row["id"]) if row else None
 
 
-def save_summary(clean_news_id: int, summary: str, model: str | None = None) -> int:
+def save_summary(
+    clean_news_id: int,
+    summary: str,
+    model: str | None = None,
+    prompt_version: str | None = None,
+    status: str = "completed",
+    error_message: str | None = None,
+) -> int:
     """Save or replace a summary for a cleaned news item."""
     now = _utc_now()
     with get_connection() as connection:
         connection.execute(
             """
-            INSERT INTO summaries (clean_news_id, summary, model, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO summaries (
+                clean_news_id, summary, model, prompt_version, status,
+                error_message, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(clean_news_id) DO UPDATE SET
                 summary = excluded.summary,
                 model = excluded.model,
+                prompt_version = excluded.prompt_version,
+                status = excluded.status,
+                error_message = excluded.error_message,
                 updated_at = excluded.updated_at
             """,
-            (clean_news_id, summary, model, now, now),
+            (clean_news_id, summary, model, prompt_version, status, error_message, now, now),
         )
         row = connection.execute("SELECT id FROM summaries WHERE clean_news_id = ?", (clean_news_id,)).fetchone()
         return int(row["id"])
+
+
+def update_clean_news_status(clean_news_id: int, status: str) -> None:
+    """Update clean_news processing status."""
+    with get_connection() as connection:
+        connection.execute(
+            """
+            UPDATE clean_news
+            SET status = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (status, _utc_now(), clean_news_id),
+        )
 
 
 def save_analysis(
@@ -255,6 +366,143 @@ def save_analysis(
         return int(cursor.lastrowid)
 
 
+def get_news_for_analysis(
+    date_from: str | None = None,
+    date_to: str | None = None,
+    category: str | None = None,
+    limit: int | None = None,
+) -> list[dict[str, Any]]:
+    """Return clean news rows joined with summaries for AI analysis."""
+    where_clauses: list[str] = []
+    values: list[Any] = []
+
+    if date_from:
+        where_clauses.append("clean_news.published_at >= ?")
+        values.append(date_from)
+    if date_to:
+        where_clauses.append("clean_news.published_at <= ?")
+        values.append(date_to)
+    if category:
+        where_clauses.append("clean_news.category = ?")
+        values.append(category)
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+    limit_sql = ""
+    if limit is not None:
+        limit_sql = "LIMIT ?"
+        values.append(limit)
+
+    with get_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT
+                clean_news.id,
+                clean_news.title,
+                clean_news.content,
+                clean_news.category,
+                clean_news.published_at,
+                summaries.summary
+            FROM clean_news
+            LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
+            {where_sql}
+            ORDER BY clean_news.published_at DESC, clean_news.id DESC
+            {limit_sql}
+            """,
+            values,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_category_counts() -> list[dict[str, Any]]:
+    """Return clean news counts grouped by category."""
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT COALESCE(NULLIF(trim(category), ''), '기타') AS category,
+                   COUNT(*) AS news_count
+            FROM clean_news
+            GROUP BY COALESCE(NULLIF(trim(category), ''), '기타')
+            ORDER BY news_count DESC, category ASC
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_source_counts(limit: int | None = None) -> list[dict[str, Any]]:
+    """Return clean news counts grouped by source."""
+    values: list[Any] = []
+    limit_sql = ""
+    if limit is not None:
+        limit_sql = "LIMIT ?"
+        values.append(limit)
+
+    with get_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT COALESCE(NULLIF(trim(source), ''), 'unknown') AS source,
+                   COUNT(*) AS news_count
+            FROM clean_news
+            GROUP BY COALESCE(NULLIF(trim(source), ''), 'unknown')
+            ORDER BY news_count DESC, source ASC
+            {limit_sql}
+            """,
+            values,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_report_metrics() -> dict[str, Any]:
+    """Return aggregate metrics for reports."""
+    with get_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM clean_news) AS total_news,
+                (SELECT COUNT(*) FROM summaries WHERE status = 'completed') AS summarized_news,
+                (SELECT AVG(content_length) FROM clean_news) AS average_content_length
+            """
+        ).fetchone()
+
+    metrics = dict(row)
+    total_news = int(metrics["total_news"] or 0)
+    summarized_news = int(metrics["summarized_news"] or 0)
+    metrics["total_news"] = total_news
+    metrics["summarized_news"] = summarized_news
+    metrics["summary_rate"] = (summarized_news / total_news * 100) if total_news else 0.0
+    metrics["average_content_length"] = float(metrics["average_content_length"] or 0)
+    return metrics
+
+
+def get_latest_analysis() -> dict[str, Any] | None:
+    """Return the latest AI analysis result."""
+    with get_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT *
+            FROM analyses
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_daily_counts() -> list[dict[str, Any]]:
+    """Return daily news counts using clean published_at or raw collected_at."""
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT substr(COALESCE(clean_news.published_at, raw_news.collected_at, clean_news.created_at), 1, 10) AS news_date,
+                   COUNT(*) AS news_count
+            FROM clean_news
+            LEFT JOIN raw_news ON raw_news.id = clean_news.raw_news_id
+            GROUP BY substr(COALESCE(clean_news.published_at, raw_news.collected_at, clean_news.created_at), 1, 10)
+            ORDER BY news_date ASC
+            """
+        ).fetchall()
+    return [dict(row) for row in rows if row["news_date"]]
+
+
 def get_news_by_id(news_id: int) -> dict[str, Any] | None:
     """Return one cleaned news item with its summary, if available."""
     with get_connection() as connection:
@@ -268,6 +516,78 @@ def get_news_by_id(news_id: int) -> dict[str, Any] | None:
             (news_id,),
         ).fetchone()
     return dict(row) if row else None
+
+
+def list_raw_news(limit: int | None = None) -> list[dict[str, Any]]:
+    """Return raw news rows for cleaning."""
+    values: list[Any] = []
+    limit_sql = ""
+    if limit is not None:
+        limit_sql = "LIMIT ?"
+        values.append(limit)
+
+    with get_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT *
+            FROM raw_news
+            ORDER BY id ASC
+            {limit_sql}
+            """,
+            values,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def clean_news_exists_by_url(url: str) -> bool:
+    """Return whether a cleaned news row already exists for the URL."""
+    with get_connection() as connection:
+        row = connection.execute("SELECT 1 FROM clean_news WHERE url = ?", (url,)).fetchone()
+    return row is not None
+
+
+def get_clean_news_for_summary(
+    news_id: int | None = None,
+    include_summarized: bool = False,
+    limit: int | None = None,
+) -> list[dict[str, Any]]:
+    """Return clean news rows selected for summarization."""
+    where_clauses: list[str] = []
+    values: list[Any] = []
+
+    if news_id is not None:
+        where_clauses.append("clean_news.id = ?")
+        values.append(news_id)
+    elif not include_summarized:
+        where_clauses.append("summaries.id IS NULL")
+        where_clauses.append("clean_news.status != 'skipped_short_content'")
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+    limit_sql = ""
+    if limit is not None:
+        limit_sql = "LIMIT ?"
+        values.append(limit)
+
+    with get_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT
+                clean_news.id,
+                clean_news.title,
+                clean_news.url,
+                clean_news.content,
+                clean_news.content_length,
+                clean_news.status,
+                summaries.id AS summary_id
+            FROM clean_news
+            LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
+            {where_sql}
+            ORDER BY clean_news.id ASC
+            {limit_sql}
+            """,
+            values,
+        ).fetchall()
+    return [dict(row) for row in rows]
 
 
 def list_news(
@@ -312,6 +632,75 @@ def list_news(
             {where_sql}
             ORDER BY clean_news.published_at DESC, clean_news.id DESC
             LIMIT ? OFFSET ?
+            """,
+            values,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_export_rows(
+    table_name: str,
+    status: str | None = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    summarized_only: bool = False,
+) -> list[dict[str, Any]]:
+    """Return rows from an allowed table for file export."""
+    allowed_tables = {"clean_news", "summaries", "analyses"}
+    if table_name not in allowed_tables:
+        raise ValueError(f"Unsupported export table: {table_name}")
+
+    where_clauses: list[str] = []
+    values: list[Any] = []
+
+    if table_name == "clean_news":
+        if summarized_only:
+            where_clauses.append(
+                "EXISTS (SELECT 1 FROM summaries WHERE summaries.clean_news_id = clean_news.id)"
+            )
+        elif status and status != "all":
+            where_clauses.append("status = ?")
+            values.append(status)
+        if category:
+            where_clauses.append("category = ?")
+            values.append(category)
+        if date_from:
+            where_clauses.append("published_at >= ?")
+            values.append(date_from)
+        if date_to:
+            where_clauses.append("published_at <= ?")
+            values.append(date_to)
+    elif table_name == "summaries":
+        if status and status != "all":
+            where_clauses.append("status = ?")
+            values.append(status)
+        if date_from:
+            where_clauses.append("created_at >= ?")
+            values.append(date_from)
+        if date_to:
+            where_clauses.append("created_at <= ?")
+            values.append(date_to)
+    elif table_name == "analyses":
+        if category:
+            where_clauses.append("category = ?")
+            values.append(category)
+        if date_from:
+            where_clauses.append("created_at >= ?")
+            values.append(date_from)
+        if date_to:
+            where_clauses.append("created_at <= ?")
+            values.append(date_to)
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+
+    with get_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT *
+            FROM {table_name}
+            {where_sql}
+            ORDER BY id ASC
             """,
             values,
         ).fetchall()
