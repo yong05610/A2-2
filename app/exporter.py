@@ -45,6 +45,28 @@ def _write_json(path: Path, rows: list[dict[str, Any]]) -> None:
         file.write("\n")
 
 
+def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    with path.open("w", encoding="utf-8") as file:
+        if not rows:
+            file.write(json.dumps({"message": "No data"}, ensure_ascii=False))
+            file.write("\n")
+            return
+        for row in rows:
+            file.write(json.dumps(row, ensure_ascii=False))
+            file.write("\n")
+
+
+def _write_excel(path: Path, rows: list[dict[str, Any]]) -> None:
+    try:
+        import pandas as pd
+    except ImportError as error:
+        raise RuntimeError("pandas and openpyxl are required for Excel export.") from error
+
+    data = rows if rows else [{"message": "No data"}]
+    dataframe = pd.DataFrame(data)
+    dataframe.to_excel(path, index=False, engine="openpyxl")
+
+
 def export_table(
     table_name: str = "clean_news",
     export_format: str = "csv",
@@ -54,9 +76,10 @@ def export_table(
     date_from: str | None = None,
     date_to: str | None = None,
 ) -> dict[str, object]:
-    """Export selected database table to CSV or JSON."""
-    if export_format not in {"csv", "json"}:
-        raise ValueError("Only csv and json export formats are implemented in Phase 10.")
+    """Export selected database table to CSV, JSON, JSONL, or Excel."""
+    supported_formats = {"csv", "json", "jsonl", "excel"}
+    if export_format not in supported_formats:
+        raise ValueError(f"Unsupported export format: {export_format}")
 
     logger.info("Export started: table=%s, format=%s", table_name, export_format)
     rows = get_export_rows(
@@ -68,11 +91,16 @@ def export_table(
         summarized_only=summarized_only,
     )
 
-    output_path = _export_dir() / f"export_{table_name}_{_timestamp()}.{export_format}"
+    extension = "xlsx" if export_format == "excel" else export_format
+    output_path = _export_dir() / f"export_{table_name}_{_timestamp()}.{extension}"
     if export_format == "csv":
         _write_csv(output_path, rows)
-    else:
+    elif export_format == "json":
         _write_json(output_path, rows)
+    elif export_format == "jsonl":
+        _write_jsonl(output_path, rows)
+    else:
+        _write_excel(output_path, rows)
 
     logger.info("Export completed: path=%s, rows=%s", output_path, len(rows))
     print(f"Export completed: table={table_name}, format={export_format}, rows={len(rows)}")

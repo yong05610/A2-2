@@ -304,22 +304,22 @@ python main.py clean --policy upsert
 
 ## Phase 6. Gemini AI 요약 기능 구현
 
-- [ ] app/summarizer.py 생성 또는 구현
-- [ ] Gemini API 호출 패키지 사용
-- [ ] GEMINI_API_KEY 환경변수에서 API Key 읽기
-- [ ] API Key를 코드에 직접 작성하지 않기
-- [ ] config.json에서 Gemini 모델명 읽기
-- [ ] 요약 대상 뉴스 조회
-- [ ] summarize --id 옵션 구현
-- [ ] summarize --all 옵션 구현
-- [ ] summarize --unsummarized 옵션 구현
-- [ ] summarize --limit 옵션 구현
-- [ ] 한국어 요약 프롬프트 작성
-- [ ] 3~5문장 요약 생성
-- [ ] 요약 결과를 summaries 테이블에 저장
-- [ ] 요약 완료 후 clean_news.status를 summarized로 변경
-- [ ] 이미 요약된 뉴스는 기본 스킵 처리
-- [ ] API 호출 실패 시 logging으로 오류 기록 후 다음 뉴스 처리
+- [X] app/summarizer.py 생성 또는 구현
+- [X] Gemini API 호출 패키지 사용
+- [X] GEMINI_API_KEY 환경변수에서 API Key 읽기
+- [X] API Key를 코드에 직접 작성하지 않기
+- [X] config.json에서 Gemini 모델명 읽기
+- [X] 요약 대상 뉴스 조회
+- [X] summarize --id 옵션 구현
+- [X] summarize --all 옵션 구현
+- [X] summarize --unsummarized 옵션 구현
+- [X] summarize --limit 옵션 구현
+- [X] 한국어 요약 프롬프트 작성
+- [X] 3~5문장 요약 생성
+- [X] 요약 결과를 summaries 테이블에 저장
+- [X] 요약 완료 후 clean_news.status를 summarized로 변경
+- [X] 이미 요약된 뉴스는 기본 스킵 처리
+- [X] API 호출 실패 시 logging으로 오류 기록 후 다음 뉴스 처리
 
 요약 정책:
 
@@ -338,32 +338,32 @@ python main.py summarize --id 1
 
 확인할 점:
 
-- [ ] summaries 테이블에 요약 결과가 저장되는가?
-- [ ] 이미 요약된 뉴스는 중복 요약되지 않는가?
-- [ ] 요약 완료 후 clean_news.status가 summarized로 변경되는가?
-- [ ] API 실패 시 전체 프로그램이 중단되지 않는가?
-- [ ] API Key가 코드나 GitHub에 노출되지 않는가?
+- [X] summaries 테이블에 요약 결과가 저장되는가?
+- [X] 이미 요약된 뉴스는 중복 요약되지 않는가?
+- [X] 요약 완료 후 clean_news.status가 summarized로 변경되는가?
+- [X] API 실패 시 전체 프로그램이 중단되지 않는가?
+- [X] API Key가 코드나 GitHub에 노출되지 않는가?
 
 ---
 
 ## Phase 7. Gemini AI 인사이트 분석 기능 구현
 
-- [ ] app/analyzer.py 생성 또는 구현
-- [ ] 분석 대상 뉴스 조회
-- [ ] analyze --date-from 옵션 구현
-- [ ] analyze --date-to 옵션 구현
-- [ ] analyze --category 옵션 구현
-- [ ] analyze --limit 옵션 구현
-- [ ] 여러 뉴스의 제목, 본문, 요약을 분석 입력으로 구성
-- [ ] 한국어 분석 프롬프트 작성
-- [ ] 주요 트렌드 분석
-- [ ] 핵심 키워드 분석
-- [ ] 시사점 분석
-- [ ] 공통점과 차이점 분석
-- [ ] 분석 항목을 최소 2개 이상 포함
-- [ ] 분석 결과를 analyses 테이블에 저장
-- [ ] 분석 결과를 콘솔에 출력
-- [ ] API 호출 실패 시 logging으로 오류 기록
+- [X] app/analyzer.py 생성 또는 구현
+- [X] 분석 대상 뉴스 조회
+- [X] analyze --date-from 옵션 구현
+- [X] analyze --date-to 옵션 구현
+- [X] analyze --category 옵션 구현
+- [X] analyze --limit 옵션 구현
+- [X] 여러 뉴스의 제목, 본문, 요약을 분석 입력으로 구성
+- [X] 한국어 분석 프롬프트 작성
+- [X] 주요 트렌드 분석
+- [X] 핵심 키워드 분석
+- [X] 시사점 분석
+- [X] 공통점과 차이점 분석
+- [X] 분석 항목을 최소 2개 이상 포함
+- [X] 분석 결과를 analyses 테이블에 저장
+- [X] 분석 결과를 콘솔에 출력
+- [X] API 호출 실패 시 logging으로 오류 기록
 
 분석 항목 후보:
 
@@ -384,25 +384,25 @@ python main.py analyze --limit 20
 
 확인할 점:
 
-- [ ] analyses 테이블에 분석 결과가 저장되는가?
-- [ ] 분석 결과에 트렌드, 키워드, 시사점 중 2개 이상이 포함되는가?
-- [ ] 분석 대상 데이터가 없을 때 안내 메시지가 출력되는가?
-- [ ] API 실패 시 오류 로그가 남는가?
+- [X] analyses 테이블에 분석 결과가 저장되는가?
+- [X] 분석 결과에 트렌드, 키워드, 시사점 중 2개 이상이 포함되는가?
+- [X] 분석 대상 데이터가 없을 때 안내 메시지가 출력되는가?
+- [X] API 실패 시 오류 로그가 남는가?
 
 ---
 
 ## Phase 8. 시각화 기능 구현
 
-- [ ] app/visualizer.py 생성 또는 구현
-- [ ] matplotlib 사용
-- [ ] 한글 폰트 설정
-- [ ] 카테고리별 뉴스 수 집계
-- [ ] 카테고리별 뉴스 수 차트 생성
-- [ ] 날짜별 뉴스 수 집계
-- [ ] 날짜별 뉴스 수 차트 생성
-- [ ] 차트를 PNG 파일로 저장
-- [ ] 차트 저장 위치를 data/charts로 설정
-- [ ] report 명령어에서 차트 생성 함수 호출
+- [X] app/visualizer.py 생성 또는 구현
+- [X] matplotlib 사용
+- [X] 한글 폰트 설정
+- [X] 카테고리별 뉴스 수 집계
+- [X] 카테고리별 뉴스 수 차트 생성
+- [X] 날짜별 뉴스 수 집계
+- [X] 날짜별 뉴스 수 차트 생성
+- [X] 차트를 PNG 파일로 저장
+- [X] 차트 저장 위치를 data/charts로 설정
+- [X] report 명령어에서 차트 생성 함수 호출
 
 필수 차트:
 
@@ -419,29 +419,29 @@ python main.py report --format md
 
 확인할 점:
 
-- [ ] data/charts 디렉터리에 PNG 파일이 생성되는가?
-- [ ] 카테고리별 차트가 생성되는가?
-- [ ] 날짜별 차트가 생성되는가?
-- [ ] 차트의 한글이 깨지지 않는가?
+- [X] data/charts 디렉터리에 PNG 파일이 생성되는가?
+- [X] 카테고리별 차트가 생성되는가?
+- [X] 날짜별 차트가 생성되는가?
+- [X] 차트의 한글이 깨지지 않는가?
 
 ---
 
 ## Phase 9. 리포트 생성 기능 구현
 
-- [ ] app/reporter.py 생성 또는 구현
-- [ ] report --format txt 옵션 구현
-- [ ] report --format md 옵션 구현
-- [ ] report --top-n 옵션 구현
-- [ ] 총 뉴스 수 계산
-- [ ] 요약 완료 뉴스 수 계산
-- [ ] 요약 완료 비율 계산
-- [ ] 평균 본문 길이 계산
-- [ ] 카테고리별 TOP N 집계
-- [ ] 소스별 TOP N 집계
-- [ ] 최신 AI 분석 결과 포함
-- [ ] 생성된 차트 경로 포함
-- [ ] 리포트를 콘솔에 출력
-- [ ] 리포트 파일을 data/reports에 저장
+- [X] app/reporter.py 생성 또는 구현
+- [X] report --format txt 옵션 구현
+- [X] report --format md 옵션 구현
+- [X] report --top-n 옵션 구현
+- [X] 총 뉴스 수 계산
+- [X] 요약 완료 뉴스 수 계산
+- [X] 요약 완료 비율 계산
+- [X] 평균 본문 길이 계산
+- [X] 카테고리별 TOP N 집계
+- [X] 소스별 TOP N 집계
+- [X] 최신 AI 분석 결과 포함
+- [X] 생성된 차트 경로 포함
+- [X] 리포트를 콘솔에 출력
+- [X] 리포트 파일을 data/reports에 저장
 
 리포트 포함 내용:
 
@@ -461,33 +461,33 @@ python main.py report --format md --top-n 5
 
 확인할 점:
 
-- [ ] 리포트가 콘솔에 출력되는가?
-- [ ] data/reports 디렉터리에 리포트 파일이 저장되는가?
-- [ ] 품질 지표가 2개 이상 포함되는가?
-- [ ] TOP N 집계가 1개 이상 포함되는가?
-- [ ] AI 분석 결과가 포함되는가?
-- [ ] 생성된 차트 경로가 포함되는가?
+- [X] 리포트가 콘솔에 출력되는가?
+- [X] data/reports 디렉터리에 리포트 파일이 저장되는가?
+- [X] 품질 지표가 2개 이상 포함되는가?
+- [X] TOP N 집계가 1개 이상 포함되는가?
+- [X] AI 분석 결과가 포함되는가?
+- [X] 생성된 차트 경로가 포함되는가?
 
 ---
 
 ## Phase 10. 데이터 내보내기 기능 구현
 
-- [ ] app/exporter.py 생성 또는 구현
-- [ ] pandas 사용
-- [ ] openpyxl 사용
-- [ ] export --format csv 구현
-- [ ] export --format excel 구현
-- [ ] export --format jsonl 구현
-- [ ] export --status 옵션 구현
-- [ ] --status 값으로 all, cleaned, summarized 지원
-- [ ] --status 기본값을 all로 설정
-- [ ] --status summarized 입력 시 요약 완료 뉴스만 내보내기
-- [ ] export --category 옵션 구현
-- [ ] export --date-from 옵션 구현
-- [ ] export --date-to 옵션 구현
-- [ ] summaries 테이블과 조인하여 요약 포함
-- [ ] 결과 파일을 data/exports에 저장
-- [ ] 파일명에 생성 날짜와 시간 포함
+- [X] app/exporter.py 생성 또는 구현
+- [X] pandas 사용
+- [X] openpyxl 사용
+- [X] export --format csv 구현
+- [X] export --format excel 구현
+- [X] export --format jsonl 구현
+- [X] export --status 옵션 구현
+- [X] --status 값으로 all, cleaned, summarized 지원
+- [X] --status 기본값을 all로 설정
+- [X] --status summarized 입력 시 요약 완료 뉴스만 내보내기
+- [X] export --category 옵션 구현
+- [X] export --date-from 옵션 구현
+- [X] export --date-to 옵션 구현
+- [X] summaries 테이블과 조인하여 요약 포함
+- [X] 결과 파일을 data/exports에 저장
+- [X] 파일명에 생성 날짜와 시간 포함
 
 필수 지원 포맷:
 
@@ -531,28 +531,28 @@ python main.py export --format jsonl --status summarized
 
 확인할 점:
 
-- [ ] CSV 파일이 생성되는가?
-- [ ] Excel 파일이 생성되는가?
-- [ ] 선택 구현 시 JSONL 파일이 생성되는가?
-- [ ] 요약 데이터가 포함되는가?
-- [ ] `--status` 필터가 정상 동작하는가?
-- [ ] `--summarized` 필터가 정상 동작하는가?
-- [ ] 결과 파일이 data/exports에 저장되는가?
+- [X] CSV 파일이 생성되는가?
+- [X] Excel 파일이 생성되는가?
+- [X] 선택 구현 시 JSONL 파일이 생성되는가?
+- [X] 요약 데이터가 포함되는가?
+- [X] `--status` 필터가 정상 동작하는가?
+- [X] `--summarized` 필터가 정상 동작하는가?
+- [X] 결과 파일이 data/exports에 저장되는가?
 
 ---
 
 ## Phase 11. 보너스 조회 기능 구현
 
-- [ ] list 서브커맨드 구현
-- [ ] show 서브커맨드 구현
-- [ ] list --category 옵션 구현
-- [ ] list --date-from 옵션 구현
-- [ ] list --date-to 옵션 구현
-- [ ] list --keyword 옵션 구현
-- [ ] list --page 옵션 구현
-- [ ] list --page-size 옵션 구현
-- [ ] show --id 옵션 구현
-- [ ] 뉴스 상세 조회 시 요약 결과 함께 출력
+- [X] list 서브커맨드 구현
+- [X] show 서브커맨드 구현
+- [X] list --category 옵션 구현
+- [X] list --date-from 옵션 구현
+- [X] list --date-to 옵션 구현
+- [X] list --keyword 옵션 구현
+- [X] list --page 옵션 구현
+- [X] list --page-size 옵션 구현
+- [X] show --id 옵션 구현
+- [X] 뉴스 상세 조회 시 요약 결과 함께 출력
 
 보너스 구현 대상:
 
@@ -573,37 +573,37 @@ python main.py show --id 1
 
 확인할 점:
 
-- [ ] 뉴스 목록이 출력되는가?
-- [ ] 페이지네이션이 동작하는가?
-- [ ] 카테고리 필터가 동작하는가?
-- [ ] 날짜 필터가 동작하는가?
-- [ ] 키워드 검색이 동작하는가?
-- [ ] 상세 조회 시 요약 결과도 함께 출력되는가?
+- [X] 뉴스 목록이 출력되는가?
+- [X] 페이지네이션이 동작하는가?
+- [X] 카테고리 필터가 동작하는가?
+- [X] 날짜 필터가 동작하는가?
+- [X] 키워드 검색이 동작하는가?
+- [X] 상세 조회 시 요약 결과도 함께 출력되는가?
 
 ---
 
 ## Phase 12. 설정과 로깅 정리
 
-- [ ] app/config.py에서 config.json 읽기 구현
-- [ ] config.json에 API 키 환경변수명 설정
-- [ ] config.json에 DB 경로 설정
-- [ ] config.json에 RSS URL 설정
-- [ ] config.json에 크롤링 대상 URL 설정
-- [ ] config.json에 중복 처리 정책 설정
-- [ ] config.json에 요청 timeout 설정
-- [ ] config.json에 요청 delay 설정
-- [ ] config.json에 Gemini 모델명 설정
-- [ ] config.json에 reports 경로 설정
-- [ ] config.json에 exports 경로 설정
-- [ ] config.json에 charts 경로 설정
-- [ ] app/logger.py에서 logging 설정
-- [ ] INFO 로그 기록
-- [ ] WARNING 로그 기록
-- [ ] ERROR 로그 기록
-- [ ] logs 디렉터리에 로그 파일 저장
-- [ ] 주요 작업 시작/종료 로그 기록
-- [ ] 오류 발생 시 ERROR 로그 기록
-- [ ] print만 사용하지 않고 logging 함께 사용
+- [X] app/config.py에서 config.json 읽기 구현
+- [X] config.json에 API 키 환경변수명 설정
+- [X] config.json에 DB 경로 설정
+- [X] config.json에 RSS URL 설정
+- [X] config.json에 크롤링 대상 URL 설정
+- [X] config.json에 중복 처리 정책 설정
+- [X] config.json에 요청 timeout 설정
+- [X] config.json에 요청 delay 설정
+- [X] config.json에 Gemini 모델명 설정
+- [X] config.json에 reports 경로 설정
+- [X] config.json에 exports 경로 설정
+- [X] config.json에 charts 경로 설정
+- [X] app/logger.py에서 logging 설정
+- [X] INFO 로그 기록
+- [X] WARNING 로그 기록
+- [X] ERROR 로그 기록
+- [X] logs 디렉터리에 로그 파일 저장
+- [X] 주요 작업 시작/종료 로그 기록
+- [X] 오류 발생 시 ERROR 로그 기록
+- [X] print만 사용하지 않고 logging 함께 사용
 
 config.json 필수 항목 예시:
 
@@ -640,37 +640,37 @@ config.json 필수 항목 예시:
 
 확인할 점:
 
-- [ ] config.json 값을 바꾸면 프로그램 동작에 반영되는가?
-- [ ] API Key가 코드에 직접 작성되어 있지 않은가?
-- [ ] logs 디렉터리에 로그 파일이 생성되는가?
-- [ ] INFO 로그가 기록되는가?
-- [ ] WARNING 로그가 기록되는가?
-- [ ] ERROR 로그가 기록되는가?
-- [ ] 오류 상황이 로그에 기록되는가?
+- [X] config.json 값을 바꾸면 프로그램 동작에 반영되는가?
+- [X] API Key가 코드에 직접 작성되어 있지 않은가?
+- [X] logs 디렉터리에 로그 파일이 생성되는가?
+- [X] INFO 로그가 기록되는가?
+- [X] WARNING 로그가 기록되는가?
+- [X] ERROR 로그가 기록되는가?
+- [X] 오류 상황이 로그에 기록되는가?
 
 ---
 
 ## Phase 13. README 작성
 
-- [ ] 프로젝트 소개 작성
-- [ ] 주요 기능 작성
-- [ ] 폴더 구조 작성
-- [ ] 설치 방법 작성
-- [ ] requirements.txt 설치 방법 작성
-- [ ] config.json 설정 방법 작성
-- [ ] GEMINI_API_KEY 환경변수 설정 방법 작성
-- [ ] CLI 명령어 사용 예시 작성
-- [ ] RSS/API 방식과 크롤링 방식의 장단점 비교 작성
-- [ ] HTTP 오류 처리 설명 작성
-- [ ] raw 데이터와 clean 데이터 분리 저장 이유 작성
-- [ ] AI 요약/분석 흐름 설명 작성
-- [ ] matplotlib 시각화 설명 작성
-- [ ] report 사용 방법 작성
-- [ ] export 사용 방법 작성
-- [ ] cron을 이용한 정기 실행 방법 작성
-- [ ] Windows 작업 스케줄러를 이용한 정기 실행 방법 작성
-- [ ] API Key를 GitHub에 올리지 말라는 주의사항 작성
-- [ ] 크롤링 정책 준수 안내 작성
+- [X] 프로젝트 소개 작성
+- [X] 주요 기능 작성
+- [X] 폴더 구조 작성
+- [X] 설치 방법 작성
+- [X] requirements.txt 설치 방법 작성
+- [X] config.json 설정 방법 작성
+- [X] GEMINI_API_KEY 환경변수 설정 방법 작성
+- [X] CLI 명령어 사용 예시 작성
+- [X] RSS/API 방식과 크롤링 방식의 장단점 비교 작성
+- [X] HTTP 오류 처리 설명 작성
+- [X] raw 데이터와 clean 데이터 분리 저장 이유 작성
+- [X] AI 요약/분석 흐름 설명 작성
+- [X] matplotlib 시각화 설명 작성
+- [X] report 사용 방법 작성
+- [X] export 사용 방법 작성
+- [X] cron을 이용한 정기 실행 방법 작성
+- [X] Windows 작업 스케줄러를 이용한 정기 실행 방법 작성
+- [X] API Key를 GitHub에 올리지 말라는 주의사항 작성
+- [X] 크롤링 정책 준수 안내 작성
 
 README에 포함할 정기 실행 예시:
 
@@ -693,41 +693,41 @@ python main.py fetch --method rss --limit 20
 
 확인할 점:
 
-- [ ] README만 보고 설치할 수 있는가?
-- [ ] README만 보고 실행할 수 있는가?
-- [ ] 프로젝트의 핵심 개념이 설명되어 있는가?
-- [ ] RSS/API 방식과 크롤링 방식의 차이가 설명되어 있는가?
-- [ ] raw/clean 분리 저장 이유가 설명되어 있는가?
-- [ ] 보안 주의사항이 포함되어 있는가?
-- [ ] 정기 실행 방법이 포함되어 있는가?
+- [X] README만 보고 설치할 수 있는가?
+- [X] README만 보고 실행할 수 있는가?
+- [X] 프로젝트의 핵심 개념이 설명되어 있는가?
+- [X] RSS/API 방식과 크롤링 방식의 차이가 설명되어 있는가?
+- [X] raw/clean 분리 저장 이유가 설명되어 있는가?
+- [X] 보안 주의사항이 포함되어 있는가?
+- [X] 정기 실행 방법이 포함되어 있는가?
 
 ---
 
 ## Phase 14. 최종 점검
 
-- [ ] CHECKLIST.md 기준으로 전체 요구사항 점검
-- [ ] MISSION.md 요구사항 누락 여부 확인
-- [ ] PRD.md 기능 요구사항 충족 여부 확인
-- [ ] TASK.md 작업 완료 여부 확인
-- [ ] CODEX_PROMPTS.md 작성 여부 확인
-- [ ] 필수 CLI 명령어 6개 동작 확인
-- [ ] 보너스 CLI 명령어 list/show 동작 확인
-- [ ] DB 4개 테이블 생성 확인
-- [ ] raw 데이터와 clean 데이터 분리 확인
-- [ ] RSS 수집 동작 확인
-- [ ] 크롤링 수집 동작 확인
-- [ ] Gemini 요약 동작 확인
-- [ ] Gemini 분석 동작 확인
-- [ ] matplotlib 차트 생성 확인
-- [ ] report 파일 생성 확인
-- [ ] export CSV 파일 생성 확인
-- [ ] export Excel 파일 생성 확인
-- [ ] README 작성 확인
-- [ ] requirements.txt 최신화
-- [ ] .gitignore 확인
-- [ ] .env 또는 API Key가 GitHub에 올라가지 않았는지 확인
-- [ ] 불필요한 테스트 파일 정리
-- [ ] 최종 실행 로그 확인
+- [X] CHECKLIST.md 기준으로 전체 요구사항 점검
+- [X] MISSION.md 요구사항 누락 여부 확인
+- [X] PRD.md 기능 요구사항 충족 여부 확인
+- [X] TASK.md 작업 완료 여부 확인
+- [X] CODEX_PROMPTS.md 작성 여부 확인
+- [X] 필수 CLI 명령어 6개 동작 확인
+- [X] 보너스 CLI 명령어 list/show 동작 확인
+- [X] DB 4개 테이블 생성 확인
+- [X] raw 데이터와 clean 데이터 분리 확인
+- [X] RSS 수집 동작 확인
+- [X] 크롤링 수집 동작 확인
+- [X] Gemini 요약 동작 확인
+- [X] Gemini 분석 동작 확인
+- [X] matplotlib 차트 생성 확인
+- [X] report 파일 생성 확인
+- [X] export CSV 파일 생성 확인
+- [X] export Excel 파일 생성 확인
+- [X] README 작성 확인
+- [X] requirements.txt 최신화
+- [X] .gitignore 확인
+- [X] .env 또는 API Key가 GitHub에 올라가지 않았는지 확인
+- [X] 불필요한 테스트 파일 정리
+- [X] 최종 실행 로그 확인
 
 최종 검증 명령어:
 
@@ -747,14 +747,14 @@ python main.py show --id 1
 
 최종 확인할 점:
 
-- [ ] 프로그램이 처음부터 끝까지 실행 가능한가?
-- [ ] 외부 데이터 수집이 가능한가?
-- [ ] raw 저장소와 clean 저장소가 분리되어 있는가?
-- [ ] AI 요약과 분석이 가능한가?
-- [ ] 분석 결과가 저장되고 조회 가능한가?
-- [ ] 차트 PNG 파일이 생성되는가?
-- [ ] 리포트 파일이 생성되는가?
-- [ ] CSV/Excel export가 가능한가?
-- [ ] 로그 파일이 생성되는가?
-- [ ] README에 실행 방법과 학습 개념이 정리되어 있는가?
-- [ ] 제출 전에 API Key가 노출되지 않았는가?
+- [X] 프로그램이 처음부터 끝까지 실행 가능한가?
+- [X] 외부 데이터 수집이 가능한가?
+- [X] raw 저장소와 clean 저장소가 분리되어 있는가?
+- [X] AI 요약과 분석이 가능한가?
+- [X] 분석 결과가 저장되고 조회 가능한가?
+- [X] 차트 PNG 파일이 생성되는가?
+- [X] 리포트 파일이 생성되는가?
+- [X] CSV/Excel export가 가능한가?
+- [X] 로그 파일이 생성되는가?
+- [X] README에 실행 방법과 학습 개념이 정리되어 있는가?
+- [X] 제출 전에 API Key가 노출되지 않았는가?

@@ -1,10 +1,19 @@
 # Environment and secrets
 .env
+.env.*
+!.env.example
 
 # Python cache and virtual environments
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
 *.py[cod]
+.Python
 .matplotlib/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
 venv/
 env/
@@ -20,5 +29,6 @@ data/exports/
 data/charts/
 
 # Local editor/system files
+.vscode/
 .DS_Store
 Thumbs.db

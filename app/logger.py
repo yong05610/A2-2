@@ -1,6 +1,7 @@
 """Logging setup for the application."""
 
 import logging
+import sys
 
 from app.config import load_config, resolve_project_path
 
@@ -15,16 +16,20 @@ def configure_logging() -> None:
         return
 
     config = load_config()
-    log_dir = resolve_project_path(config["paths"]["logs"])
-    log_dir.mkdir(parents=True, exist_ok=True)
+    logging_config = config.get("logging", {})
+    log_level_name = str(logging_config.get("level", "INFO")).upper()
+    log_level = getattr(logging, log_level_name, logging.INFO)
+    log_file = resolve_project_path(str(logging_config.get("file", "logs/app.log")))
+    log_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(
-        level=logging.INFO,
-        format="[%(levelname)s] %(message)s",
+        level=log_level,
+        format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
         handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_dir / "app.log", encoding="utf-8"),
+            logging.StreamHandler(sys.stderr),
+            logging.FileHandler(log_file, encoding="utf-8"),
         ],
+        force=True,
     )
     _CONFIGURED = True
 

@@ -518,6 +518,31 @@ def get_news_by_id(news_id: int) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def get_news_detail(news_id: int) -> dict[str, Any] | None:
+    """Return one cleaned news item with summary text for the show command."""
+    with get_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT
+                clean_news.id,
+                clean_news.title,
+                clean_news.url,
+                clean_news.source,
+                clean_news.category,
+                clean_news.published_at,
+                clean_news.status,
+                clean_news.content_length,
+                clean_news.content,
+                summaries.summary AS summary_text
+            FROM clean_news
+            LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
+            WHERE clean_news.id = ?
+            """,
+            (news_id,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
 def list_raw_news(limit: int | None = None) -> list[dict[str, Any]]:
     """Return raw news rows for cleaning."""
     values: list[Any] = []
@@ -590,16 +615,14 @@ def get_clean_news_for_summary(
     return [dict(row) for row in rows]
 
 
-def list_news(
+def _build_list_news_filters(
     status: str | None = None,
     category: str | None = None,
     date_from: str | None = None,
     date_to: str | None = None,
     keyword: str | None = None,
-    limit: int = 20,
-    offset: int = 0,
-) -> list[dict[str, Any]]:
-    """Return cleaned news rows using optional filters."""
+) -> tuple[str, list[Any]]:
+    """Build safe WHERE SQL and bound values for list queries."""
     where_clauses: list[str] = []
     values: list[Any] = []
 
@@ -616,17 +639,41 @@ def list_news(
         where_clauses.append("clean_news.published_at <= ?")
         values.append(date_to)
     if keyword:
-        where_clauses.append("(clean_news.title LIKE ? OR clean_news.content LIKE ?)")
+        where_clauses.append(
+            "(clean_news.title LIKE ? OR clean_news.content LIKE ? OR summaries.summary LIKE ?)"
+        )
         keyword_value = f"%{keyword}%"
-        values.extend([keyword_value, keyword_value])
+        values.extend([keyword_value, keyword_value, keyword_value])
 
     where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+    return where_sql, values
+
+
+def list_news(
+    status: str | None = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    keyword: str | None = None,
+    limit: int = 20,
+    offset: int = 0,
+) -> list[dict[str, Any]]:
+    """Return cleaned news rows using optional filters."""
+    where_sql, values = _build_list_news_filters(
+        status=status,
+        category=category,
+        date_from=date_from,
+        date_to=date_to,
+        keyword=keyword,
+    )
     values.extend([limit, offset])
 
     with get_connection() as connection:
         rows = connection.execute(
             f"""
-            SELECT clean_news.*, summaries.summary
+            SELECT clean_news.*,
+                   summaries.summary,
+                   CASE WHEN summaries.id IS NULL THEN 0 ELSE 1 END AS summarized
             FROM clean_news
             LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
             {where_sql}
@@ -636,6 +683,34 @@ def list_news(
             values,
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def count_news(
+    status: str | None = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    keyword: str | None = None,
+) -> int:
+    """Return the number of cleaned news rows matching list filters."""
+    where_sql, values = _build_list_news_filters(
+        status=status,
+        category=category,
+        date_from=date_from,
+        date_to=date_to,
+        keyword=keyword,
+    )
+    with get_connection() as connection:
+        row = connection.execute(
+            f"""
+            SELECT COUNT(*) AS news_count
+            FROM clean_news
+            LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
+            {where_sql}
+            """,
+            values,
+        ).fetchone()
+    return int(row["news_count"] or 0)
 
 
 def get_export_rows(
@@ -655,21 +730,19 @@ def get_export_rows(
     values: list[Any] = []
 
     if table_name == "clean_news":
-        if summarized_only:
-            where_clauses.append(
-                "EXISTS (SELECT 1 FROM summaries WHERE summaries.clean_news_id = clean_news.id)"
-            )
+        if summarized_only or status == "summarized":
+            where_clauses.append("summaries.id IS NOT NULL")
         elif status and status != "all":
-            where_clauses.append("status = ?")
+            where_clauses.append("clean_news.status = ?")
             values.append(status)
         if category:
-            where_clauses.append("category = ?")
+            where_clauses.append("clean_news.category = ?")
             values.append(category)
         if date_from:
-            where_clauses.append("published_at >= ?")
+            where_clauses.append("clean_news.published_at >= ?")
             values.append(date_from)
         if date_to:
-            where_clauses.append("published_at <= ?")
+            where_clauses.append("clean_news.published_at <= ?")
             values.append(date_to)
     elif table_name == "summaries":
         if status and status != "all":
@@ -694,14 +767,28 @@ def get_export_rows(
 
     where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
 
-    with get_connection() as connection:
-        rows = connection.execute(
-            f"""
+    if table_name == "clean_news":
+        sql = f"""
+            SELECT
+                clean_news.*,
+                summaries.summary AS summary,
+                summaries.model AS summary_model,
+                summaries.status AS summary_status,
+                summaries.created_at AS summary_created_at,
+                summaries.updated_at AS summary_updated_at
+            FROM clean_news
+            LEFT JOIN summaries ON summaries.clean_news_id = clean_news.id
+            {where_sql}
+            ORDER BY clean_news.id ASC
+            """
+    else:
+        sql = f"""
             SELECT *
             FROM {table_name}
             {where_sql}
             ORDER BY id ASC
-            """,
-            values,
-        ).fetchall()
+            """
+
+    with get_connection() as connection:
+        rows = connection.execute(sql, values).fetchall()
     return [dict(row) for row in rows]
