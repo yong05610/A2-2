@@ -362,3 +362,135 @@ python main.py show --id 1
 ```
 
 Gemini API Key가 없으면 `summarize`와 `analyze`는 실패할 수 있지만, 프로그램이 비정상 종료되지 않고 오류 메시지와 로그를 남기도록 구성되어 있습니다.
+
+
+---
+
+## System Flow
+
+```mermaid
+flowchart LR
+    A[CLI Start] --> B{Command}
+
+    B --> C[collect]
+    C --> D[raw_news]
+
+    B --> E[clean]
+    D --> E
+    E --> F[clean_news]
+
+    B --> G[summarize]
+    F --> G
+    G --> H[summaries]
+
+    B --> I[analyze]
+    F --> I
+    H --> I
+    I --> J[analyses]
+
+    B --> K[visualize]
+    F --> K
+    J --> K
+    K --> L[PNG Charts]
+
+    B --> M[export]
+    D --> M
+    F --> M
+    H --> M
+    J --> M
+    M --> N[CSV / JSON / JSONL / Excel]
+```
+
+
+
+
+
+## System Structure
+
+| Layer | Component | Role |
+|---|---|---|
+| CLI Layer | `main.py`, `app/cli.py` | 사용자 명령어를 받아 각 기능 실행 |
+| Config Layer | `app/config.py`, `.env`, `config.json` | API Key, DB 경로, 설정값 관리 |
+| Data Collection | `collect` | RSS 또는 웹 크롤링으로 뉴스 수집 |
+| Data Cleaning | `clean` | 중복 제거, 텍스트 정제, 정규화 |
+| AI Processing | `summarize`, `analyze` | Gemini API를 이용한 요약 및 분석 |
+| Database Layer | `app/database.py` | SQLite 테이블 생성, 저장, 조회 |
+| Visualization | `visualize` | matplotlib 기반 PNG 차트 생성 |
+| Export | `app/exporter.py` | CSV, JSON, JSONL, Excel 파일 내보내기 |
+| Logging | `app/logger.py` | 실행 기록 및 오류 로그 저장 |
+
+
+## Data State Transition
+
+```mermaid
+stateDiagram-v2
+    [*] --> raw_news: collect
+
+    raw_news --> clean_news: clean
+    clean_news --> summaries: summarize
+    clean_news --> analyses: analyze
+    summaries --> analyses: analyze with summary
+
+    raw_news --> exported_files: export raw data
+    clean_news --> exported_files: export cleaned data
+    summaries --> exported_files: export summaries
+    analyses --> exported_files: export analyses
+
+    clean_news --> chart_files: visualize
+    analyses --> chart_files: visualize
+
+    exported_files --> [*]
+    chart_files --> [*]
+```
+
+## Module Role Summary
+
+| Module | Role | Main Responsibility |
+|---|---|---|
+| `main.py` | Entry Point | Starts the CLI application |
+| `app/cli.py` | Command Router | Defines and routes CLI subcommands |
+| `app/config.py` | Configuration Manager | Loads `.env`, `config.json`, API keys, and settings |
+| `app/database.py` | Database Layer | Creates tables and handles SQLite queries |
+| `app/logger.py` | Logging Manager | Records execution logs and errors |
+| `collector` / `crawler` | Data Collection | Collects news from RSS or web crawling |
+| `cleaner` | Data Cleaning | Normalizes text and removes duplicated or invalid data |
+| `summarizer` | AI Summary | Uses Gemini API to summarize cleaned news |
+| `analyzer` | AI Analysis | Uses Gemini API to analyze news content |
+| `visualizer` | Chart Generator | Generates PNG charts using stored data |
+| `app/exporter.py` | Export Manager | Exports data to CSV, JSON, JSONL, and Excel |
+
+
+| Module | Role |
+|---|---|
+| `cli.py` | CLI 명령어 라우팅 |
+| `config.py` | 설정 및 환경변수 관리 |
+| `database.py` | SQLite 저장/조회 |
+| `collect` | 뉴스 수집 |
+| `clean` | 데이터 정제 |
+| `summarize` | Gemini 요약 |
+| `analyze` | Gemini 분석 |
+| `visualize` | 차트 생성 |
+| `exporter.py` | 파일 내보내기 |
+| `logger.py` | 로그 기록 |
+
+
+## Database Table Summary
+
+| Table | Description | Created By | Used By |
+|---|---|---|---|
+| `raw_news` | Original collected news data | `collect` | `clean`, `export` |
+| `clean_news` | Cleaned and normalized news data | `clean` | `summarize`, `analyze`, `visualize`, `export` |
+| `summaries` | Gemini-generated summaries | `summarize` | `analyze`, `export` |
+| `analyses` | Gemini-generated analysis results | `analyze` | `visualize`, `export` |
+
+
+## CLI Command Summary
+
+| Command | Input | Output | Purpose |
+|---|---|---|---|
+| `collect` | RSS URL or crawling target | `raw_news` | Collect raw news articles |
+| `clean` | `raw_news` | `clean_news` | Clean and normalize collected news |
+| `summarize` | `clean_news` | `summaries` | Generate AI summaries using Gemini |
+| `analyze` | `clean_news`, `summaries` | `analyses` | Generate AI-based analysis |
+| `visualize` | Database records | PNG chart files | Create visual reports |
+| `export` | Database records | CSV, JSON, JSONL, Excel | Export project data |
