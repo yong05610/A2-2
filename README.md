@@ -494,3 +494,56 @@ stateDiagram-v2
 | `analyze` | `clean_news`, `summaries` | `analyses` | Generate AI-based analysis |
 | `visualize` | Database records | PNG chart files | Create visual reports |
 | `export` | Database records | CSV, JSON, JSONL, Excel | Export project data |
+
+
+## Team Role Distribution
+
+본 프로젝트는 4인 팀으로 진행되었으며, 효율적인 협업을 위해 역할을 단계별로 나누어 운영하였다.  
+조장은 전체 진행과 통합을 담당하고, 각 조원은 데이터 처리, AI 분석, 결과 출력 및 문서화를 중심으로 역할을 분담하였다.
+
+### Process-based Role Assignment
+
+| 단계 | 주 담당 | 보조 | 주요 내용 |
+|---|---|---|---|
+| 진행 | 조장 | 전원 | 일정 관리, 회의 진행, Git 작업 관리 |
+| 설계 | 조장, A1 | A2, A3 | DB 구조, CLI 구조, 데이터 흐름 설계 |
+| 구현 | A1, A2, A3 | 조장 | 기능별 모듈 구현 |
+| 통합 | 조장 | A1, A2, A3 | 전체 CLI 연결 및 실행 흐름 점검 |
+| 검사 | A3 | 조장, A1, A2 | 테스트, 체크리스트 확인, 실행 결과 검증 |
+| 문서화 | A3 | 조장 | README, TASK, CHECKLIST 정리 |
+| 발표 | 조장 | A1, A2, A3 | 발표 흐름 구성 및 파트별 설명 |
+
+### Member Responsibilities
+
+| 구성원 | 주요 역할 | 담당 영역 |
+|---|---|---|
+| 조장 | 프로젝트 진행 / 통합 / 발표 총괄 | 일정 관리, CLI 통합, 전체 실행 테스트, 발표 흐름 구성 |
+| A1 | 데이터 수집 및 정제 담당 | 뉴스 수집, 데이터 정제, `raw_news`, `clean_news` 테이블 관리 |
+| A2 | AI 요약 및 분석 담당 | Gemini API 연동, 뉴스 요약, 감성/키워드/카테고리 분석 |
+| A3 | 시각화 / 내보내기 / 문서화 담당 | 차트 생성, CSV/JSON/JSONL/Excel export, README 및 체크리스트 정리 |
+
+### Functional Responsibility
+
+| 기능 영역 | 담당자 | 주요 작업 |
+|---|---|---|
+| CLI 및 전체 구조 | 조장 | 서브커맨드 연결, 전체 실행 흐름 관리 |
+| 데이터 수집 | A1 | RSS/크롤링 기반 뉴스 데이터 수집 |
+| 데이터 정제 | A1 | 중복 제거, 텍스트 정리, 정제 데이터 저장 |
+| AI 요약 | A2 | Gemini API를 활용한 뉴스 요약 생성 |
+| AI 분석 | A2 | 감성 분석, 키워드 추출, 카테고리 분류 |
+| 시각화 | A3 | 분석 결과 기반 차트 이미지 생성 |
+| 데이터 내보내기 | A3 | CSV, JSON, JSONL, Excel 파일 생성 |
+| 테스트 및 검증 | A3, 조장 | 전체 기능 실행 확인 및 결과물 검증 |
+| 문서 및 발표 | 조장, A3 | README 작성, 발표 흐름 구성 |
+
+### Collaboration Summary
+
+각 기능은 주 담당자가 구현하고, 다른 팀원이 보조 검토하는 방식으로 진행하였다.  
+이를 통해 데이터 수집, 정제, AI 요약 및 분석, 시각화, 내보내기까지의 전체 파이프라인을 효율적으로 완성할 수 있었다.
+
+역할 분담을 요약하면 다음과 같다.
+
+- **조장**: 전체 진행, 설계, 통합, 발표 총괄
+- **A1**: 데이터 수집, 정제, DB 저장
+- **A2**: Gemini API 기반 요약 및 분석
+- **A3**: 시각화, 내보내기, 문서화, 검증
