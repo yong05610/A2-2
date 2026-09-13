@@ -19,24 +19,29 @@
 ### 2.1 Python 및 패키지 설치
 
 ```powershell
+
 python --version
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+
 ```
+
 
 필요 패키지는 `requirements.txt`에 정의되어 있습니다.
 
 ```text
-beautifulsoup4
-feedparser
-google-genai
-matplotlib
-openpyxl
-pandas
-python-dotenv
-requests
+
+    beautifulsoup4
+    feedparser
+    google-genai
+    matplotlib
+    openpyxl
+    pandas
+    python-dotenv
+    requests
+
 ```
 
 ### 2.2 Gemini API Key 설정
@@ -44,14 +49,18 @@ requests
 `.env.example`을 복사해 `.env`를 만들고 API Key를 설정합니다.
 
 ```powershell
+
 Copy-Item .env.example .env
+
 ```
 
 `.env` 예시:
 
 ```env
+
 GEMINI_API_KEY=your-gemini-api-key-here
 GEMINI_MODEL=gemini-3.6-flash
+
 ```
 
 주의:
@@ -60,11 +69,14 @@ GEMINI_MODEL=gemini-3.6-flash
 - `.env`는 `.gitignore`에 포함되어야 합니다.
 - API Key가 없으면 `summarize`, `analyze` 명령은 실패 처리되지만 전체 프로그램이 비정상 종료되지는 않습니다.
 
-### 2.3 DB 초기화
+### 2.3 DB 초기화  init-db
 
 ```powershell
+
 python main.py init-db
+
 ```
+
 
 이 명령은 `data/news.db` SQLite 파일과 다음 테이블을 준비합니다.
 
@@ -80,6 +92,7 @@ python main.py init-db
 처음 사용하는 경우 아래 순서대로 실행하면 됩니다.
 
 ```powershell
+
 python main.py init-db
 python main.py fetch --method rss --limit 10
 python main.py clean --policy skip
@@ -89,6 +102,7 @@ python main.py report --format md --top-n 5
 python main.py export --format csv --status summarized
 python main.py list --page 1 --page-size 10
 python main.py show --id 1
+
 ```
 
 데이터 흐름은 `fetch → clean → summarize/analyze → report/export/list/show` 순서입니다.
@@ -129,6 +143,8 @@ A2-2/
 ## 5. 전체 시스템 흐름도
 
 ```mermaid
+
+
 flowchart TD
     U[사용자] --> CLI[main.py / app.cli]
 
@@ -169,11 +185,15 @@ flowchart TD
     CLI --> QUERY[list/show]
     CLEANDB --> QUERY
     SUMMARY --> QUERY
+
+    
 ```
 
 ## 6. DFD: 데이터 입출력 관계
 
 ```mermaid
+
+
 flowchart LR
     EXT1[RSS Feed] --> P1((P1 뉴스 수집))
     EXT2[웹 페이지] --> P1
@@ -210,11 +230,15 @@ flowchart LR
     D2 --> P7((P7 조회))
     D3 --> P7
     P7 --> USER[콘솔 출력]
+
+    
 ```
 
 ## 7. 데이터 상태 전이
 
 ```mermaid
+
+
 stateDiagram-v2
     [*] --> raw_news: fetch
     raw_news --> clean_news: clean
@@ -228,6 +252,8 @@ stateDiagram-v2
     analyses --> export_files: export
     clean_news --> console: list/show
     summaries --> console: show
+
+    
 ```
 
 ## 8. 명령어 사용법
@@ -235,29 +261,33 @@ stateDiagram-v2
 ### 8.1 전체 도움말
 
 ```powershell
+
 python main.py --help
+
 ```
 
 지원 명령:
 
 | 명령 | 역할 |
 |---|---|
-| `init-db` | SQLite DB와 테이블 초기화 |
-| `fetch` | RSS/API 또는 크롤링 방식으로 뉴스 수집 |
-| `clean` | 원본 뉴스 정제 후 `clean_news` 저장 |
-| `summarize` | Gemini로 뉴스 요약 생성 |
+| `init-db` | SQLite DB와 테이블 연결 초기화 ( DATA가 clear되지 않음 ) |
+| `fetch` | RSS/API 또는 크롤링 방식으로 선택적 뉴스 수집 |
+| `clean` | 원본 뉴스 정제 후 `clean_news` 전환 |
+| `summarize` | Gemini로 뉴스 요약 생성 요약 항목 |
 | `analyze` | 여러 뉴스 기반 인사이트 분석 |
 | `report` | 통계, 최신 분석, 차트 경로가 포함된 리포트 생성 |
-| `export` | DB 데이터를 파일로 내보내기 |
+| `export` | DB 데이터를 파일  내보내기 ( Msql. JSONL, Excel 로 선택적 ) |
 | `list` | 정제 뉴스 목록 조회 |
 | `show` | 정제 뉴스 상세 및 요약 조회 |
 
-### 8.2 뉴스 수집: `fetch`
+### 8.2 뉴스 수집: fetch
 
 ```powershell
+
 python main.py fetch --method rss --limit 10
 python main.py fetch --method crawl --limit 5
 python main.py fetch --method rss --source "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko" --category IT --limit 20
+
 ```
 
 옵션:
@@ -281,11 +311,13 @@ app.database.save_raw_news()
 raw_news
 ```
 
-### 8.3 데이터 정제: `clean`
+### 8.3 데이터 정제: clean
 
 ```powershell
+
 python main.py clean --policy skip
 python main.py clean --policy upsert --limit 50
+
 ```
 
 옵션:
@@ -295,6 +327,7 @@ python main.py clean --policy upsert --limit 50
 | `--policy skip` | 같은 URL이 이미 있으면 건너뜀 |
 | `--policy upsert` | 같은 URL이 있으면 기존 데이터를 갱신 |
 | `--limit` | 정제할 원본 뉴스 수 제한 |
+
 
 정제 내용:
 
@@ -308,19 +341,23 @@ python main.py clean --policy upsert --limit 50
 내부 흐름:
 
 ```text
+
 app.cli._handle_clean()
  → app.cleaner.clean_raw_news()
  → app.database.list_raw_news()
  → app.database.save_clean_news()
  → clean_news
+ 
 ```
 
-### 8.4 AI 요약: `summarize`
+### 8.4 AI 요약: summarize
 
 ```powershell
+
 python main.py summarize --unsummarized --limit 3
 python main.py summarize --id 1
 python main.py summarize --all --limit 10
+
 ```
 
 옵션:
@@ -336,26 +373,30 @@ python main.py summarize --all --limit 10
 
 - `clean_news`에서 대상 뉴스를 조회합니다.
 - 본문이 너무 짧으면 `skipped_short_content`로 상태를 변경합니다.
-- Gemini API 호출 후 `summaries`에 저장합니다.
+- **Gemini API 호출** 후 `summaries`에 저장합니다.
 - 성공 시 `clean_news.status`를 `summarized`로 변경합니다.
 - 실패 시 `summary_failed`로 변경하고 로그에 남깁니다.
 
 내부 흐름:
 
 ```text
+
 app.cli._handle_summarize()
  → app.summarizer.summarize_news()
  → app.database.get_clean_news_for_summary()
  → Gemini API
  → app.database.save_summary()
  → app.database.update_clean_news_status()
+ 
 ```
 
-### 8.5 AI 인사이트 분석: `analyze`
+### 8.5 AI 인사이트 분석: analyze
 
 ```powershell
+
 python main.py analyze --limit 10
 python main.py analyze --date-from 2025-01-01 --date-to 2025-12-31 --category IT
+
 ```
 
 옵션:
@@ -377,7 +418,7 @@ python main.py analyze --date-from 2025-01-01 --date-to 2025-12-31 --category IT
 
 분석 결과는 `analyses` 테이블에 저장됩니다.
 
-### 8.6 리포트 생성: `report`
+### 8.6 리포트 생성: report
 
 ```powershell
 python main.py report --format md --top-n 5
@@ -402,7 +443,7 @@ python main.py report --format txt --top-n 5
 
 내부적으로 `report`는 `app.visualizer.create_charts()`를 호출하므로 차트 생성까지 함께 수행합니다.
 
-### 8.7 데이터 내보내기: `export`
+### 8.7 데이터 내보내기: export
 
 ```powershell
 python main.py export --format csv --status summarized
@@ -430,7 +471,7 @@ python main.py export --table analyses --format json
 data/exports/
 ```
 
-### 8.8 목록 조회: `list`
+### 8.8 목록 조회: list
 
 ```powershell
 python main.py list --page 1 --page-size 10
@@ -447,7 +488,7 @@ python main.py list --date-from 2025-01-01 --date-to 2025-12-31
 - 처리 상태
 - 요약 여부
 
-### 8.9 상세 조회: `show`
+### 8.9 상세 조회: show
 
 ```powershell
 python main.py show --id 1
@@ -488,6 +529,8 @@ python main.py show --id 1
 ### 10.1 수집 흐름
 
 ```mermaid
+
+
 sequenceDiagram
     participant User as 사용자
     participant CLI as app.cli
@@ -504,11 +547,15 @@ sequenceDiagram
     DB-->>Fetcher: 저장 결과
     Fetcher-->>CLI: fetched/saved/skipped/failed
     CLI-->>User: 결과 출력
+
+    
 ```
 
 ### 10.2 정제·요약·분석 흐름
 
 ```mermaid
+
+
 sequenceDiagram
     participant User as 사용자
     participant CLI as app.cli
@@ -537,11 +584,15 @@ sequenceDiagram
     Analyzer->>Gemini: generate_content()
     Gemini-->>Analyzer: insight result
     Analyzer->>DB: save_analysis()
+
+    
 ```
 
 ### 10.3 리포트·시각화 흐름
 
 ```mermaid
+
+
 sequenceDiagram
     participant User as 사용자
     participant CLI as app.cli
@@ -561,6 +612,8 @@ sequenceDiagram
     Visualizer->>FS: data/charts/*.png
     Reporter->>FS: data/reports/news_report_*.md
     Reporter-->>User: 콘솔 리포트 출력
+
+
 ```
 
 ## 11. 데이터베이스 테이블 설명
